@@ -30,9 +30,10 @@ export const signup = async (req, res, next) => {
         })
         res.cookie("jwt", createToken(user.email, user.id), {
             maxAge,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
-            httpOnly: true
+            secure: true, // Always secure on Vercel
+            sameSite: "None", // Required for cross-origin cookies
+            httpOnly: true,
+            domain: process.env.NODE_ENV === "production" ? ".vercel.app" : undefined
         })
         return res.status(201).json({
             user: {
@@ -76,9 +77,10 @@ export const login = async (req, res, next) => {
         console.log("Login successful, creating token...");
         res.cookie("jwt", createToken(user.email, user.id), {
             maxAge,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
-            httpOnly: true
+            secure: true, // Always secure on Vercel
+            sameSite: "None", // Required for cross-origin cookies
+            httpOnly: true,
+            domain: process.env.NODE_ENV === "production" ? ".vercel.app" : undefined
         })
         return res.status(200).json({
             user: {
@@ -165,9 +167,10 @@ export const logout = async (req, res, next) => {
         // Clear the JWT cookie
         res.cookie("jwt", "", {
             maxAge: 1, // Set to 1ms to expire immediately
-            secure: process.env.NODE_ENV === "production",
-            sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
-            httpOnly: true
+            secure: true, // Always secure on Vercel
+            sameSite: "None", // Required for cross-origin cookies
+            httpOnly: true,
+            domain: process.env.NODE_ENV === "production" ? ".vercel.app" : undefined
         });
 
         return res.status(200).json({ message: "Logout successful" });
