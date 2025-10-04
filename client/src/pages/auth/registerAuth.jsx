@@ -9,7 +9,7 @@ import { motion } from "motion/react";
 
 const RegisterAuth = () => {
     const navigate = useNavigate();
-    const { setUserInfo } = useAppStore();
+    const { setUserInfo, setToken } = useAppStore();
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
@@ -50,6 +50,10 @@ const RegisterAuth = () => {
                 )
                 if (response.status === 201) {
                     setUserInfo(response.data.user);
+                    // Store token if provided
+                    if (response.data.token) {
+                        setToken(response.data.token);
+                    }
                     toast.success("Account created successfully!");
                     // Since user provided firstName and lastName during registration,
                     // profileSetup will be true, so redirect to chat

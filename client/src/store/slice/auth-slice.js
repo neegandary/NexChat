@@ -7,6 +7,13 @@ export const createAuthSlice = (set, get) => ({
     contacts: [],
     isDarkMode: false,
     setUserInfo: (userInfo) => set({ userInfo }),
+    setToken: (token) => {
+        if (token) {
+            localStorage.setItem('token', token);
+        } else {
+            localStorage.removeItem('token');
+        }
+    },
     setDarkMode: (isDarkMode) => {
         // Apply to DOM immediately for instant visual feedback
         if (typeof document !== 'undefined') {
@@ -87,10 +94,11 @@ export const createAuthSlice = (set, get) => ({
             contacts: []
         });
 
-        // Clear localStorage if needed
+        // Clear localStorage
         if (typeof window !== 'undefined') {
             // Keep dark mode preference but clear other data
             const darkMode = localStorage.getItem('darkMode');
+            localStorage.removeItem('token');
             localStorage.clear();
             if (darkMode) {
                 localStorage.setItem('darkMode', darkMode);

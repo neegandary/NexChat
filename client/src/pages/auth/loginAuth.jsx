@@ -9,7 +9,7 @@ import { motion } from "motion/react";
 
 const LoginAuth = () => {
     const navigate = useNavigate();
-    const { setUserInfo } = useAppStore();
+    const { setUserInfo, setToken } = useAppStore();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
@@ -33,6 +33,10 @@ const LoginAuth = () => {
                 const response = await apiClient.post(LOGIN_ROUTE, { email, password }, { withCredentials: true })
                 if (response.data.user.id) {
                     setUserInfo(response.data.user);
+                    // Store token if provided
+                    if (response.data.token) {
+                        setToken(response.data.token);
+                    }
                     toast.success("Login successful!");
                     if (response.data.user.profileSetup) {
                         navigate("/chat");

@@ -28,7 +28,8 @@ export const signup = async (req, res, next) => {
             lastName,
             profileSetup: true // Set to true since user provided name during registration
         })
-        res.cookie("jwt", createToken(user.email, user.id), {
+        const token = createToken(user.email, user.id);
+        res.cookie("jwt", token, {
             maxAge,
             secure: true, // Always secure on Vercel
             sameSite: "None", // Required for cross-origin cookies
@@ -43,7 +44,8 @@ export const signup = async (req, res, next) => {
                 firstName: user.firstName,
                 lastName: user.lastName,
                 image: user.image
-            }
+            },
+            token: token // Send token in response for fallback
         })
     } catch (error) {
         console.log(error)
@@ -75,7 +77,8 @@ export const login = async (req, res, next) => {
         }
 
         console.log("Login successful, creating token...");
-        res.cookie("jwt", createToken(user.email, user.id), {
+        const token = createToken(user.email, user.id);
+        res.cookie("jwt", token, {
             maxAge,
             secure: true, // Always secure on Vercel
             sameSite: "None", // Required for cross-origin cookies
@@ -90,7 +93,8 @@ export const login = async (req, res, next) => {
                 firstName: user.firstName,
                 lastName: user.lastName,
                 image: user.image
-            }
+            },
+            token: token // Send token in response for fallback
         })
     } catch (error) {
         console.log("Login error:", error)
