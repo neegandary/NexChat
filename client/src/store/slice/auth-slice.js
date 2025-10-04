@@ -45,7 +45,14 @@ export const createAuthSlice = (set, get) => ({
             const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
             const shouldBeDark = savedTheme ? savedTheme === 'true' : prefersDark;
 
-            get().setDarkMode(shouldBeDark);
+            // Use direct DOM manipulation to avoid state update loops
+            if (shouldBeDark) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            
+            set({ isDarkMode: shouldBeDark });
         }
     },
     setSelectedChatType: (chatType) => set({ selectedChatType: chatType }),

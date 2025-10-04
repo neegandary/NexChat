@@ -14,27 +14,45 @@ import { GET_USER_INFO } from './utils/constants'
 
 const PrivateRoute = ({ children }) => {
   const { userInfo } = useAppStore();
-  const isAuthenticated = !!userInfo;
+  const token = localStorage.getItem('token');
+  const isAuthenticated = !!userInfo || !!token;
   return isAuthenticated ? children : <Navigate to="/auth/login" />
 }
 const AuthRoute = ({ children }) => {
   const { userInfo } = useAppStore();
-  const isAuthenticated = !!userInfo;
+  const token = localStorage.getItem('token');
+  const isAuthenticated = !!userInfo || !!token;
   return isAuthenticated ? <Navigate to="/chat" /> : children;
 }
 
 function App() {
-  const { userInfo, setUserInfo, initializeDarkMode } = useAppStore();
+  const { setUserInfo } = useAppStore();
   const [loading, setLoading] = useState(true);
 
-  // Initialize dark mode immediately when app starts
   useEffect(() => {
-    initializeDarkMode();
-  }, [initializeDarkMode]);
+    // Initialize dark mode
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('darkMode');
+      const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+      const shouldBeDark = savedTheme ? savedTheme === 'true' : prefersDark;
 
-  useEffect(() => {
+      if (shouldBeDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+
+    // Get user data
     const getUserData = async () => {
       try {
+        // Check if we have a token first
+        const token = localStorage.getItem('token');
+        if (!token) {
+          setLoading(false);
+          return;
+        }
+
         const response = await apiClient.get(GET_USER_INFO, { withCredentials: true });
         if (response.status === 200 && response.data.id) {
           setUserInfo(response.data);
@@ -49,12 +67,9 @@ function App() {
         setLoading(false);
       }
     }
-    if (!userInfo) {
-      getUserData();
-    } else {
-      setLoading(false);
-    }
-  }, [userInfo, setUserInfo])
+    
+    getUserData();
+  }, [setUserInfo])
 
   if (loading) {
     return <div>Loading...</div>;

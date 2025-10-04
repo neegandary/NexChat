@@ -7,8 +7,8 @@ const setupSocket = (server) => {
     const io = new SocketIOServer(server, {
         cors: {
             origin: [
-                "http://localhost:5173", 
-                "http://localhost:5174", 
+                "http://localhost:5173",
+                "http://localhost:5174",
                 "http://localhost:5175",
                 "https://nex-chat-kqkx.vercel.app",
                 "https://nex-chat-ten.vercel.app",
