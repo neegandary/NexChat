@@ -8,9 +8,28 @@ import {
 } from "../controllers/MessagesController.js";
 import { verifyToken } from "../middlewares/AuthMiddleware.js";
 import multer from "multer";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import { v2 as cloudinary } from "cloudinary";
+
+// Configure Cloudinary
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Configure Cloudinary storage
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: "nexchat-files",
+        resource_type: "auto", // Supports images, videos, and raw files
+        public_id: (req, file) => `${Date.now()}-${file.originalname.split('.')[0]}`,
+    },
+});
 
 const messagesRoutes = Router();
-const upload = multer({ dest: 'uploads/files' });
+const upload = multer({ storage: storage });
 
 messagesRoutes.post("/get-messages", verifyToken, getMessages);
 messagesRoutes.post("/get-messages-with-contacts", verifyToken, getMessagesWithContacts);

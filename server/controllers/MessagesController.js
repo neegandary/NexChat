@@ -1,6 +1,5 @@
 import Message from "../models/MessageModel.js";
 import mongoose from "mongoose";
-import { mkdirSync, renameSync } from "fs";
 
 export const getMessagesWithContacts = async (request, response, next) => {
     try {
@@ -145,14 +144,14 @@ export const uploadFile = async (request, response, next) => {
         if (!request.file) {
             return response.status(400).send("No file uploaded");
         }
-        const date = Date.now();
-        let fileDir = `uploads/files/${date}`;
-        let fileName = `${fileDir}/${request.file.originalname}`;
 
-        mkdirSync(fileDir, { recursive: true });
-
-        renameSync(request.file.path, fileName);
-        return response.status(200).json({ filePath: fileName });
+        // With Cloudinary storage, the file is already uploaded
+        // request.file.path contains the Cloudinary URL
+        return response.status(200).json({
+            filePath: request.file.path,
+            publicId: request.file.filename,
+            originalName: request.file.originalname
+        });
     } catch (error) {
         console.log(error);
         return response.status(500).send("Internal Server Error");
