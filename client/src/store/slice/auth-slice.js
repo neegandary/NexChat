@@ -51,7 +51,7 @@ export const createAuthSlice = (set, get) => ({
             } else {
                 document.documentElement.classList.remove('dark');
             }
-            
+
             set({ isDarkMode: shouldBeDark });
         }
     },

@@ -67,7 +67,7 @@ function App() {
         setLoading(false);
       }
     }
-    
+
     getUserData();
   }, [setUserInfo])
 
