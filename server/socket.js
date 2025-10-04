@@ -3,6 +3,28 @@ import Message from "./models/MessageModel.js";
 import User from "./models/UserModel.js";
 import Conversation from "./models/ConversationModel.js";
 
+// Cache cho user data để tránh query lại
+const userCache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+// Hàm helper để get user data với cache
+const getCachedUser = async (userId) => {
+    const cacheKey = userId.toString();
+    const cached = userCache.get(cacheKey);
+    
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+        return cached.data;
+    }
+    
+    const userData = await User.findById(userId).select("_id email firstName lastName image").lean();
+    userCache.set(cacheKey, {
+        data: userData,
+        timestamp: Date.now()
+    });
+    
+    return userData;
+};
+
 const setupSocket = (server) => {
     const io = new SocketIOServer(server, {
         cors: {
@@ -17,6 +39,20 @@ const setupSocket = (server) => {
             methods: ["GET", "POST"],
             credentials: true,
             allowedHeaders: ["Content-Type", "Authorization"],
+        },
+        // Tối ưu performance
+        transports: ['websocket', 'polling'],
+        allowEIO3: true,
+        pingTimeout: 60000,
+        pingInterval: 25000,
+        upgradeTimeout: 30000,
+        maxHttpBufferSize: 1e6,
+        // Compression
+        compression: true,
+        // Connection state recovery
+        connectionStateRecovery: {
+            maxDisconnectionDuration: 2 * 60 * 1000,
+            skipMiddlewares: true,
         }
     });
 
@@ -34,70 +70,55 @@ const setupSocket = (server) => {
 
     const sendMessage = async (message) => {
         try {
-            console.log("Received sendMessage:", message);
             const senderSocketId = userSocketMap.get(message.sender);
             const recipientSocketId = userSocketMap.get(message.recipient);
-            console.log("Socket IDs - sender:", senderSocketId, "recipient:", recipientSocketId);
-            console.log("Current userSocketMap:", Object.fromEntries(userSocketMap));
 
-            // Verify users exist before creating message
-            const senderExists = await User.findById(message.sender);
-            const recipientExists = await User.findById(message.recipient);
-            console.log("Sender exists:", !!senderExists, "Recipient exists:", !!recipientExists);
+            // Tối ưu: Sử dụng Promise.all với cached user data
+            const [conversation, senderData, recipientData] = await Promise.all([
+                // Find or create conversation
+                Conversation.findOneAndUpdate(
+                    {
+                        participants: { $all: [message.sender, message.recipient] },
+                        isGroup: false
+                    },
+                    {
+                        participants: [message.sender, message.recipient],
+                        isGroup: false
+                    },
+                    {
+                        upsert: true,
+                        new: true,
+                        setDefaultsOnInsert: true
+                    }
+                ).lean(),
+                // Get cached sender data
+                getCachedUser(message.sender),
+                // Get cached recipient data  
+                getCachedUser(message.recipient)
+            ]);
 
-            // Find or create conversation between sender and recipient
-            let conversation = await Conversation.findOne({
-                participants: { $all: [message.sender, message.recipient] },
-                isGroup: false
-            });
-
-            if (!conversation) {
-                conversation = await Conversation.create({
-                    participants: [message.sender, message.recipient],
-                    isGroup: false
-                });
-                console.log("Created new conversation:", conversation._id);
-            } else {
-                console.log("Found existing conversation:", conversation._id);
-            }
-
-            // Add conversation ID to message
+            // Create message với conversation ID
             const messageWithConversation = {
                 ...message,
                 conversation: conversation._id
             };
 
             const createdMessage = await Message.create(messageWithConversation);
-            console.log("Created message:", createdMessage);
 
-            // Update conversation with last message
-            await Conversation.findByIdAndUpdate(conversation._id, {
-                lastMessage: createdMessage._id,
-                lastMessageTime: createdMessage.timestamp
-            });
-
-            // Try to populate step by step
-            let messageData;
-            try {
-                messageData = await Message.findById(createdMessage._id)
-                    .populate("sender", "id _id email firstName lastName image")
-                    .populate("recipient", "id _id email firstName lastName image")
-                    .lean(); // Use lean for better performance
-
-                console.log("Populated message data:", messageData);
-            } catch (populateError) {
-                console.error("Populate error:", populateError);
-                // Fallback - manually fetch user data
-                const sender = await User.findById(message.sender).select("_id email firstName lastName image");
-                const recipient = await User.findById(message.recipient).select("_id email firstName lastName image");
-
-                messageData = {
+            // Tối ưu: Update conversation và tạo response data song song
+            const [, messageData] = await Promise.all([
+                // Update conversation
+                Conversation.findByIdAndUpdate(conversation._id, {
+                    lastMessage: createdMessage._id,
+                    lastMessageTime: createdMessage.timestamp
+                }),
+                // Tạo message data để gửi
+                Promise.resolve({
                     ...createdMessage.toObject(),
-                    sender: sender,
-                    recipient: recipient
-                };
-                console.log("Manual populated message data:", messageData);
-            }
+                    sender: senderData,
+                    recipient: recipientData
+                })
+            ]);
 
             // Check if populate worked
             if (!messageData.sender) {

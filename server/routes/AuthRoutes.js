@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router } from ".pnpm/express@5.1.0/node_modules/express";
 import { signup, login, getUserInfo, updateProfile, logout } from "../controllers/AuthController.js";
 import { verifyToken } from "../middlewares/AuthMiddleware.js";
 

@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import bcrypt from "bcrypt"
+import bcrypt from ".pnpm/bcrypt@6.0.0/node_modules/bcrypt"
 
 const userSchema = new mongoose.Schema({
     email: {

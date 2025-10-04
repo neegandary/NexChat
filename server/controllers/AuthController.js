@@ -1,7 +1,7 @@
-import jwt from "jsonwebtoken";
+import jwt from ".pnpm/jsonwebtoken@9.0.2/node_modules/jsonwebtoken";
 import User from "../models/UserModel.js"
-import { compare } from "bcrypt";
-import bcrypt from "bcrypt";
+import { compare } from ".pnpm/bcrypt@6.0.0/node_modules/bcrypt";
+import bcrypt from ".pnpm/bcrypt@6.0.0/node_modules/bcrypt";
 
 const maxAge = 3 * 24 * 60 * 60 * 1000; // 3 days in milliseconds
 

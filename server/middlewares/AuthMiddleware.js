@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import jwt from ".pnpm/jsonwebtoken@9.0.2/node_modules/jsonwebtoken";
 
 export const verifyToken = (request, response, next) => {
     // Try to get token from cookie first, then from Authorization header
