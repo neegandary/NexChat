@@ -1,0 +1,21 @@
+{
+  "name": "nexchat",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "cd server && pnpm install && cd ../client && pnpm install && pnpm run build",
+    "start": "cd server && pnpm run start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/neegandary/NexChat.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/neegandary/NexChat/issues"
+  },
+  "homepage": "https://github.com/neegandary/NexChat#readme"
+}
