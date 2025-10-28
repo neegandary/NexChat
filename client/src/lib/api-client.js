@@ -8,10 +8,10 @@ const apiClient = axios.create({
     timeout: 30000, // 30 seconds
     maxContentLength: 50 * 1024 * 1024, // 50MB
     maxBodyLength: 50 * 1024 * 1024, // 50MB
-    // Keep alive connection
+    // Safe headers only (browser sẽ tự handle connection headers)
     headers: {
-        'Connection': 'keep-alive',
-        'Keep-Alive': 'timeout=5, max=1000'
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
     }
 });
 

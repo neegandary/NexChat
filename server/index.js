@@ -1,9 +1,9 @@
-import express from ".pnpm/express@5.1.0/node_modules/express";
+import express from "express";
 import mongoose, { mongo } from "mongoose";
-import cors from ".pnpm/cors@2.8.5/node_modules/cors";
+import cors from "cors";
 import dotenv from "dotenv";
-import cookieParser from ".pnpm/cookie-parser@1.4.7/node_modules/cookie-parser";
-import compression from ".pnpm/compression@1.8.1/node_modules/compression";
+import cookieParser from "cookie-parser";
+import compression from "compression";
 import authRoutes from "./routes/AuthRoutes.js";
 import contactsRoutes from "./routes/ContactsRoutes.js";
 import messagesRoutes from "./routes/MessagesRoutes.js";
@@ -15,28 +15,64 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const databaseUrl = process.env.MONGO_URI;
 
+// CORS configuration - Sửa lỗi CORS
 app.use(cors({
-    origin: [
+    origin: function (origin, callback) {
+        // Allow requests from specific origins
+        const allowedOrigins = [
+            "http://localhost:5173",
+            "http://localhost:5174", 
+            "http://localhost:5175",
+            "https://nex-chat-kqkx.vercel.app",
+            "https://nex-chat-ten.vercel.app",
+            process.env.CLIENT_URL
+        ];
+        
+        // Allow requests with no origin (like mobile apps or Postman)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    credentials: true,
+    allowedHeaders: [
+        "Content-Type", 
+        "Authorization", 
+        "X-Requested-With",
+        "Accept",
+        "Origin"
+    ],
+    exposedHeaders: ["Content-Range", "X-Content-Range"],
+    optionsSuccessStatus: 200,
+    preflightContinue: false
+}));
+
+// Enhanced CORS middleware để xử lý preflight
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    const allowedOrigins = [
         "http://localhost:5173",
-        "http://localhost:5174",
+        "http://localhost:5174", 
         "http://localhost:5175",
         "https://nex-chat-kqkx.vercel.app",
         "https://nex-chat-ten.vercel.app",
-        process.env.CLIENT_URL || "https://your-app.vercel.app"
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-    optionsSuccessStatus: 200
-}));
+        process.env.CLIENT_URL
+    ];
 
-// Handle preflight requests for all routes
-app.use((req, res, next) => {
+    if (allowedOrigins.includes(origin)) {
+        res.header('Access-Control-Allow-Origin', origin);
+    }
+    
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Max-Age', '86400'); // Cache preflight for 24 hours
+    
     if (req.method === 'OPTIONS') {
-        res.header('Access-Control-Allow-Origin', req.headers.origin);
-        res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-        res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-        res.header('Access-Control-Allow-Credentials', 'true');
         return res.sendStatus(200);
     }
     next();
@@ -57,7 +93,6 @@ app.use(express.urlencoded({
 }));
 
 // Compression middleware
-import compression from '.pnpm/compression@1.8.1/node_modules/compression';
 app.use(compression({
     level: 6,
     threshold: 1024, // Only compress if size > 1KB
