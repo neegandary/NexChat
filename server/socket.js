@@ -33,6 +33,7 @@ const setupSocket = (server) => {
                 "http://localhost:5174",
                 "http://localhost:5175",
                 "https://nex-chat-kqkx.vercel.app",
+                "https://nex-chat-xi.vercel.app",
                 "https://nexchat-l5o4.onrender.com",
                 process.env.CLIENT_URL || "https://your-app.vercel.app"
             ],

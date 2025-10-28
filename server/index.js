@@ -23,7 +23,7 @@ app.use(cors({
             "http://localhost:5173",
             "http://localhost:5174", 
             "http://localhost:5175",
-            "https://nex-chat-kqkx.vercel.app",
+            "https://nex-chat-xi.vercel.app",
             "https://nexchat-l5o4.onrender.com",
             process.env.CLIENT_URL
         ];
@@ -59,6 +59,7 @@ app.use((req, res, next) => {
         "http://localhost:5174", 
         "http://localhost:5175",
         "https://nex-chat-kqkx.vercel.app",
+        "https://nex-chat-xi.vercel.app",
         "https://nexchat-l5o4.onrender.com",
         process.env.CLIENT_URL
     ];
