@@ -77,17 +77,16 @@ const Accounts = () => {
 
           {/* Profile Avatar */}
           <div className="flex justify-center mb-6">
-            <ProfileImageUploader
-              currentImage={userInfo.image}
-              onImageUpdated={(newImageUrl) => {
-                setUserInfo({
-                  ...userInfo,
-                  image: newImageUrl
-                });
-                toast.success("Profile image updated successfully!");
-              }}
-              className="flex flex-col items-center"
-            />
+            <div className="flex flex-col items-center">
+              <div className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white text-4xl font-bold shadow-lg">
+                {userInfo.image ? (
+                  <img src={userInfo.image} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                ) : (
+                  <User size={48} />
+                )}
+              </div>
+              <p className="text-sm text-[#767C8C] mt-2">Profile Picture</p>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
