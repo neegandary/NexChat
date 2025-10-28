@@ -108,19 +108,12 @@ app.use("/api/auth", authRoutes);
 app.use("/api/contacts", contactsRoutes);
 app.use("/api/messages", messagesRoutes);
 
-const server = app.listen(PORT, () => {
-    console.log("Server is running on port " + PORT);
-});
-
-setupSocket(server);
-
+// Connect to MongoDB first, then start server
 mongoose.connect(databaseUrl, {
     // Tối ưu connection pooling
     maxPoolSize: 50,          // Maintain up to 50 socket connections
     serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
     socketTimeoutMS: 45000,   // Close sockets after 45 seconds of inactivity
-    bufferMaxEntries: 0,      // Disable mongoose buffering
-    bufferCommands: false,    // Disable mongoose buffering
 
     // Compression
     compressors: ['zlib'],
@@ -137,6 +130,14 @@ mongoose.connect(databaseUrl, {
     readPreference: 'primaryPreferred'
 }).then(() => {
     console.log("Connected to MongoDB with optimized settings");
+    
+    // Start server only after MongoDB is connected
+    const server = app.listen(PORT, () => {
+        console.log("Server is running on port " + PORT);
+    });
+
+    setupSocket(server);
 }).catch((error) => {
     console.error("MongoDB connection error:", error);
+    process.exit(1);
 });
